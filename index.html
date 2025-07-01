@@ -118,12 +118,18 @@
             margin-bottom: 10px;
         }
         
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
         
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
@@ -133,7 +139,7 @@
             color: white;
         }
         
-        .btn-success:hover {
+        .btn-success:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
         }
@@ -143,7 +149,7 @@
             color: white;
         }
         
-        .btn-warning:hover {
+        .btn-warning:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
         }
@@ -153,7 +159,7 @@
             color: white;
         }
         
-        .btn-info:hover {
+        .btn-info:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(23, 162, 184, 0.4);
         }
@@ -181,6 +187,12 @@
             background: #fff3cd;
             color: #856404;
             border: 1px solid #ffeaa7;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
         }
         
         .two-column {
@@ -226,27 +238,38 @@
             min-height: 200px;
         }
         
-        .github-link {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 10px 15px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
+        .json-editor.read-only {
+            background: #f8f9fa;
+            color: #6c757d;
         }
         
-        .github-link:hover {
-            background: rgba(0,0,0,0.9);
-            transform: translateY(-2px);
+        .github-link {
+            display: none;
+        }
+
+        .edit-mode-notice {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .view-mode-notice {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <a href="https://github.com" class="github-link" target="_blank">⭐ Star on GitHub</a>
+
     
     <div class="container">
         <div class="header">
@@ -254,51 +277,64 @@
             <p>Decode, edit, and regenerate JWT tokens with ease</p>
         </div>
         
-        <div class="security-warning">
-            ⚠️ <strong>Security Warning:</strong> This tool runs in your browser. Only use with development/test tokens, never with production secrets!
-        </div>
+
         
         <div class="content">
-            <!-- Input Section -->
+            <!-- Main Content -->
             <div class="section">
-                <h2>📝 Input</h2>
-                <div class="form-group">
-                    <label for="jwt-token">JWT Token:</label>
-                    <textarea id="jwt-token" rows="4" placeholder="Paste your JWT token here..."></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="secret">Secret Key:</label>
-                    <div class="password-toggle">
-                        <input type="password" id="secret" placeholder="Enter your secret key">
-                        <input type="checkbox" id="show-secret">
-                        <label for="show-secret">Show</label>
-                    </div>
-                </div>
-                
-                <button class="btn btn-primary" onclick="parseToken()">🔍 Parse Token</button>
-                <button class="btn btn-warning" onclick="resetForm()">🔄 Reset</button>
-                
-                <div id="status" class="status hidden"></div>
-            </div>
-            
-            <!-- Token Information -->
-            <div id="token-info" class="section hidden">
-                <h2>📊 Token Information</h2>
                 <div class="two-column">
+                    <!-- Left Column - Token Input -->
                     <div>
-                        <h3>Header</h3>
-                        <textarea id="header" class="json-editor" readonly></textarea>
+                        <h2>📝 JWT Token Input</h2>
+                        <div class="form-group">
+                            <label for="jwt-token">JWT Token:</label>
+                            <textarea id="jwt-token" rows="12" placeholder="Paste your JWT token here..."></textarea>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="viewToken()">👁️ View Token</button>
+                        <button class="btn btn-warning" onclick="resetForm()">🔄 Reset</button>
+                        
+                        <div id="status" class="status hidden"></div>
                     </div>
+                    
+                    <!-- Right Column - JSON View -->
                     <div>
-                        <h3>Payload (Editable)</h3>
-                        <textarea id="payload" class="json-editor" placeholder="Edit payload JSON here..."></textarea>
+                        <h2>📊 Token Information</h2>
+                        <div id="view-mode-notice" class="view-mode-notice hidden">
+                            📖 <strong>View Mode:</strong> You can see the token contents below. To edit, enter your secret key and enable edit mode.
+                        </div>
+                        <div id="edit-mode-notice" class="edit-mode-notice hidden">
+                            ✏️ <strong>Edit Mode:</strong> You can now edit the payload and generate new tokens.
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Header:</label>
+                            <textarea id="header" class="json-editor read-only" rows="4" readonly></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Payload:</label>
+                            <textarea id="payload" class="json-editor read-only" rows="6" readonly placeholder="Payload JSON will appear here..."></textarea>
+                        </div>
+                        
+                        <!-- Secret Key Section -->
+                        <div id="secret-section" class="form-group">
+                            <label for="secret">Secret Key:</label>
+                            <div class="password-toggle">
+                                <input type="password" id="secret" placeholder="Enter secret key for editing">
+                                <input type="checkbox" id="show-secret">
+                                <label for="show-secret">Show</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div style="margin-top: 15px;">
+                            <button id="enable-edit-btn" class="btn btn-success" onclick="enableEditMode()">🔓 Enable Edit Mode</button>
+                            <button id="disable-edit-btn" class="btn btn-warning hidden" onclick="disableEditMode()">🔒 Disable Edit Mode</button>
+                            <button id="generate-btn" class="btn btn-success hidden" onclick="generateToken()">🔨 Generate New Token</button>
+                            <button class="btn btn-info" onclick="copyPayload()">📋 Copy Payload</button>
+                        </div>
                     </div>
-                </div>
-                
-                <div style="margin-top: 20px;">
-                    <button class="btn btn-success" onclick="generateToken()">🔨 Generate New Token</button>
-                    <button class="btn btn-info" onclick="copyPayload()">📋 Copy Payload</button>
                 </div>
             </div>
             
@@ -319,6 +355,7 @@
     <script>
         let currentHeader = {};
         let currentPayload = {};
+        let isEditMode = false;
         
         // Toggle password visibility
         document.getElementById('show-secret').addEventListener('change', function() {
@@ -355,17 +392,11 @@
             return base64UrlEscape(CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(str)));
         }
         
-        function parseToken() {
+        function viewToken() {
             const token = document.getElementById('jwt-token').value.trim();
-            const secret = document.getElementById('secret').value.trim();
             
             if (!token) {
                 showStatus('Please enter a JWT token', 'error');
-                return;
-            }
-            
-            if (!secret) {
-                showStatus('Please enter a secret key', 'error');
                 return;
             }
             
@@ -386,20 +417,76 @@
                 document.getElementById('header').value = JSON.stringify(currentHeader, null, 2);
                 document.getElementById('payload').value = JSON.stringify(currentPayload, null, 2);
                 
-                // Verify signature
-                const isValid = verifySignature(token, secret);
+                // Show notices
+                document.getElementById('view-mode-notice').classList.remove('hidden');
                 
-                document.getElementById('token-info').classList.remove('hidden');
+                // Reset to view mode
+                disableEditMode();
                 
-                if (isValid) {
-                    showStatus('✅ Token parsed successfully! Signature is valid.', 'success');
-                } else {
-                    showStatus('⚠️ Token parsed successfully! Warning: Invalid signature.', 'warning');
-                }
+                showStatus('✅ Token parsed successfully! You can now view the contents.', 'info');
                 
             } catch (error) {
                 showStatus(`Error parsing token: ${error.message}`, 'error');
             }
+        }
+        
+        function enableEditMode() {
+            const secret = document.getElementById('secret').value.trim();
+            
+            if (!secret) {
+                showStatus('Please enter a secret key to enable edit mode', 'error');
+                return;
+            }
+            
+            const token = document.getElementById('jwt-token').value.trim();
+            
+            try {
+                // Verify signature if possible
+                let signatureValid = false;
+                if (token) {
+                    signatureValid = verifySignature(token, secret);
+                }
+                
+                isEditMode = true;
+                
+                // Enable editing
+                const payloadTextarea = document.getElementById('payload');
+                payloadTextarea.readOnly = false;
+                payloadTextarea.classList.remove('read-only');
+                
+                // Show/hide appropriate elements
+                document.getElementById('view-mode-notice').classList.add('hidden');
+                document.getElementById('edit-mode-notice').classList.remove('hidden');
+                document.getElementById('enable-edit-btn').classList.add('hidden');
+                document.getElementById('disable-edit-btn').classList.remove('hidden');
+                document.getElementById('generate-btn').classList.remove('hidden');
+                
+                if (signatureValid) {
+                    showStatus('✅ Edit mode enabled! Token signature is valid.', 'success');
+                } else {
+                    showStatus('⚠️ Edit mode enabled! Warning: Token signature may be invalid with this secret.', 'warning');
+                }
+                
+            } catch (error) {
+                showStatus(`Error enabling edit mode: ${error.message}`, 'error');
+            }
+        }
+        
+        function disableEditMode() {
+            isEditMode = false;
+            
+            // Disable editing
+            const payloadTextarea = document.getElementById('payload');
+            payloadTextarea.readOnly = true;
+            payloadTextarea.classList.add('read-only');
+            
+            // Show/hide appropriate elements
+            document.getElementById('view-mode-notice').classList.remove('hidden');
+            document.getElementById('edit-mode-notice').classList.add('hidden');
+            document.getElementById('enable-edit-btn').classList.remove('hidden');
+            document.getElementById('disable-edit-btn').classList.add('hidden');
+            document.getElementById('generate-btn').classList.add('hidden');
+            document.getElementById('output-section').classList.add('hidden');
         }
         
         function verifySignature(token, secret) {
@@ -425,6 +512,11 @@
         }
         
         function generateToken() {
+            if (!isEditMode) {
+                showStatus('Please enable edit mode first', 'error');
+                return;
+            }
+            
             const secret = document.getElementById('secret').value.trim();
             const payloadText = document.getElementById('payload').value.trim();
             
@@ -514,12 +606,16 @@
             document.getElementById('payload').value = '';
             document.getElementById('new-token').value = '';
             
-            document.getElementById('token-info').classList.add('hidden');
             document.getElementById('output-section').classList.add('hidden');
+            document.getElementById('view-mode-notice').classList.add('hidden');
             hideStatus();
             
             currentHeader = {};
             currentPayload = {};
+            isEditMode = false;
+            
+            // Reset UI state
+            disableEditMode();
         }
     </script>
 </body>
