@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JWT Token Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .security-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            border-radius: 10px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+        }
+        
+        .section h2 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        input[type="text"], input[type="password"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        textarea {
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+            color: white;
+        }
+        
+        .btn-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(23, 162, 184, 0.4);
+        }
+        
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .password-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .password-toggle input[type="checkbox"] {
+            width: auto;
+        }
+        
+        .json-editor {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 200px;
+        }
+        
+        .github-link {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .github-link:hover {
+            background: rgba(0,0,0,0.9);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <a href="https://github.com" class="github-link" target="_blank">⭐ Star on GitHub</a>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🔐 JWT Token Editor</h1>
+            <p>Decode, edit, and regenerate JWT tokens with ease</p>
+        </div>
+        
+        <div class="security-warning">
+            ⚠️ <strong>Security Warning:</strong> This tool runs in your browser. Only use with development/test tokens, never with production secrets!
+        </div>
+        
+        <div class="content">
+            <!-- Input Section -->
+            <div class="section">
+                <h2>📝 Input</h2>
+                <div class="form-group">
+                    <label for="jwt-token">JWT Token:</label>
+                    <textarea id="jwt-token" rows="4" placeholder="Paste your JWT token here..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="secret">Secret Key:</label>
+                    <div class="password-toggle">
+                        <input type="password" id="secret" placeholder="Enter your secret key">
+                        <input type="checkbox" id="show-secret">
+                        <label for="show-secret">Show</label>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="parseToken()">🔍 Parse Token</button>
+                <button class="btn btn-warning" onclick="resetForm()">🔄 Reset</button>
+                
+                <div id="status" class="status hidden"></div>
+            </div>
+            
+            <!-- Token Information -->
+            <div id="token-info" class="section hidden">
+                <h2>📊 Token Information</h2>
+                <div class="two-column">
+                    <div>
+                        <h3>Header</h3>
+                        <textarea id="header" class="json-editor" readonly></textarea>
+                    </div>
+                    <div>
+                        <h3>Payload (Editable)</h3>
+                        <textarea id="payload" class="json-editor" placeholder="Edit payload JSON here..."></textarea>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-success" onclick="generateToken()">🔨 Generate New Token</button>
+                    <button class="btn btn-info" onclick="copyPayload()">📋 Copy Payload</button>
+                </div>
+            </div>
+            
+            <!-- Output Section -->
+            <div id="output-section" class="section hidden">
+                <h2>✨ New Token</h2>
+                <div class="form-group">
+                    <textarea id="new-token" rows="4" readonly placeholder="New token will appear here..."></textarea>
+                </div>
+                
+                <button class="btn btn-success" onclick="copyToken()">📋 Copy Token</button>
+                <button class="btn btn-info" onclick="downloadToken()">💾 Download Token</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script>
+        let currentHeader = {};
+        let currentPayload = {};
+        
+        // Toggle password visibility
+        document.getElementById('show-secret').addEventListener('change', function() {
+            const secretInput = document.getElementById('secret');
+            secretInput.type = this.checked ? 'text' : 'password';
+        });
+        
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.classList.remove('hidden');
+        }
+        
+        function hideStatus() {
+            document.getElementById('status').classList.add('hidden');
+        }
+        
+        // Base64 URL encode/decode functions
+        function base64UrlEscape(str) {
+            return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+        }
+        
+        function base64UrlUnescape(str) {
+            str += new Array(5 - str.length % 4).join('=');
+            return str.replace(/\-/g, '+').replace(/_/g, '/');
+        }
+        
+        function base64UrlDecode(str) {
+            return CryptoJS.enc.Base64.parse(base64UrlUnescape(str)).toString(CryptoJS.enc.Utf8);
+        }
+        
+        function base64UrlEncode(str) {
+            return base64UrlEscape(CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(str)));
+        }
+        
+        function parseToken() {
+            const token = document.getElementById('jwt-token').value.trim();
+            const secret = document.getElementById('secret').value.trim();
+            
+            if (!token) {
+                showStatus('Please enter a JWT token', 'error');
+                return;
+            }
+            
+            if (!secret) {
+                showStatus('Please enter a secret key', 'error');
+                return;
+            }
+            
+            try {
+                const parts = token.split('.');
+                if (parts.length !== 3) {
+                    showStatus('Invalid JWT token format', 'error');
+                    return;
+                }
+                
+                // Decode header and payload
+                const headerJson = base64UrlDecode(parts[0]);
+                const payloadJson = base64UrlDecode(parts[1]);
+                
+                currentHeader = JSON.parse(headerJson);
+                currentPayload = JSON.parse(payloadJson);
+                
+                document.getElementById('header').value = JSON.stringify(currentHeader, null, 2);
+                document.getElementById('payload').value = JSON.stringify(currentPayload, null, 2);
+                
+                // Verify signature
+                const isValid = verifySignature(token, secret);
+                
+                document.getElementById('token-info').classList.remove('hidden');
+                
+                if (isValid) {
+                    showStatus('✅ Token parsed successfully! Signature is valid.', 'success');
+                } else {
+                    showStatus('⚠️ Token parsed successfully! Warning: Invalid signature.', 'warning');
+                }
+                
+            } catch (error) {
+                showStatus(`Error parsing token: ${error.message}`, 'error');
+            }
+        }
+        
+        function verifySignature(token, secret) {
+            try {
+                const parts = token.split('.');
+                const header = parts[0];
+                const payload = parts[1];
+                const signature = parts[2];
+                
+                const signingMethod = currentHeader.alg || 'HS256';
+                
+                if (signingMethod !== 'HS256') {
+                    return false; // Only support HS256 for now
+                }
+                
+                const signingInput = header + '.' + payload;
+                const computedSignature = base64UrlEscape(CryptoJS.HmacSHA256(signingInput, secret).toString(CryptoJS.enc.Base64));
+                
+                return computedSignature === signature;
+            } catch (error) {
+                return false;
+            }
+        }
+        
+        function generateToken() {
+            const secret = document.getElementById('secret').value.trim();
+            const payloadText = document.getElementById('payload').value.trim();
+            
+            if (!secret) {
+                showStatus('Please enter a secret key', 'error');
+                return;
+            }
+            
+            if (!payloadText) {
+                showStatus('Please enter a payload', 'error');
+                return;
+            }
+            
+            try {
+                const payload = JSON.parse(payloadText);
+                
+                // Encode header and payload
+                const headerEncoded = base64UrlEncode(JSON.stringify(currentHeader));
+                const payloadEncoded = base64UrlEncode(JSON.stringify(payload));
+                
+                // Create signature
+                const signingInput = headerEncoded + '.' + payloadEncoded;
+                const signature = base64UrlEscape(CryptoJS.HmacSHA256(signingInput, secret).toString(CryptoJS.enc.Base64));
+                
+                // Build final token
+                const newToken = headerEncoded + '.' + payloadEncoded + '.' + signature;
+                
+                document.getElementById('new-token').value = newToken;
+                document.getElementById('output-section').classList.remove('hidden');
+                showStatus('✅ New token generated successfully!', 'success');
+                
+            } catch (error) {
+                showStatus('Error: Invalid JSON in payload', 'error');
+            }
+        }
+        
+        async function copyPayload() {
+            const payload = document.getElementById('payload').value;
+            try {
+                await navigator.clipboard.writeText(payload);
+                showStatus('📋 Payload copied to clipboard!', 'success');
+            } catch (error) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = payload;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showStatus('📋 Payload copied to clipboard!', 'success');
+            }
+        }
+        
+        async function copyToken() {
+            const token = document.getElementById('new-token').value;
+            try {
+                await navigator.clipboard.writeText(token);
+                showStatus('📋 Token copied to clipboard!', 'success');
+            } catch (error) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = token;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showStatus('📋 Token copied to clipboard!', 'success');
+            }
+        }
+        
+        function downloadToken() {
+            const token = document.getElementById('new-token').value;
+            const blob = new Blob([token], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'jwt_token.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+            showStatus('💾 Token downloaded!', 'success');
+        }
+        
+        function resetForm() {
+            document.getElementById('jwt-token').value = '';
+            document.getElementById('secret').value = '';
+            document.getElementById('header').value = '';
+            document.getElementById('payload').value = '';
+            document.getElementById('new-token').value = '';
+            
+            document.getElementById('token-info').classList.add('hidden');
+            document.getElementById('output-section').classList.add('hidden');
+            hideStatus();
+            
+            currentHeader = {};
+            currentPayload = {};
+        }
+    </script>
+</body>
+</html>
